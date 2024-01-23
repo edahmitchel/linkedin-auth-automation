@@ -22,7 +22,7 @@ class Aggregator {
   async getBrowser() {
     try {
       return await puppeteer.launch({
-        headless: true, // Assuming you want to run headless
+        headless: "new", // Assuming you want to run headless
         args: ["--no-sandbox", "--disable-setuid-sandbox"], // Add these arguments
       });
     } catch (error) {
