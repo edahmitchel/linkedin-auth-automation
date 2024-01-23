@@ -3,6 +3,7 @@
 const express = require("express");
 const path = require("path");
 const puppeteer = require("puppeteer");
+const fs = require("fs");
 
 class Aggregator {
   constructor() {
@@ -21,13 +22,14 @@ class Aggregator {
   async getBrowser() {
     try {
       return await puppeteer.launch({
-        headless: "new",
+        headless: true, // Assuming you want to run headless
+        args: ["--no-sandbox", "--disable-setuid-sandbox"], // Add these arguments
       });
     } catch (error) {
       console.log("Error launching browser: " + (error.message || error));
+      throw new Error(error.message);
     }
   }
-
   // LinkedIn Aggregator Credential Test
   async performLinkedInAuth(credentials) {
     try {
@@ -48,16 +50,65 @@ class Aggregator {
         await page.waitForTimeout(this.randomDelay(500, 1000));
 
         await page.click('button[type="submit"]');
-        await page.waitForTimeout(70000);
-        console.log("url", page.url());
-        const initiateLoadAnimations = await page.$$(
-          ".initiate-load-animation"
-        );
-        console.log(page.content());
-        if (initiateLoadAnimations.length > 0) {
-          console.log(">>> Success: Credentials verified <<<");
-          credStatus = true;
+        await page.waitForTimeout(3000);
+        console.log("ur", page.url());
+        if (page.url() === "https://www.linkedin.com/uas/login-submit") {
+          const failedContent = await page.content();
+          // fs.writeFile("failepageContent.html", failedContent, (err) => {
+          if (err) {
+            console.error("Error writing to failed file:", err);
+          } else {
+            console.log("Page content saved to pageContent.html");
+          }
+          // });
+          return {
+            data: { status: false },
+            message: "LinkedIn account verification completed",
+          };
         }
+        if (
+          page.url() ===
+          "https://www.linkedin.com/feed/?trk=homepage-basic_sign-in-submit"
+        ) {
+          return {
+            data: { status: true },
+            message: "LinkedIn account verification completed",
+          };
+        }
+        // await page.waitForTimeout(30000);
+        await page.waitForNavigation({ timeout: 100000 });
+        console.log("url", page.url());
+        if (
+          page.url() ===
+          "https://www.linkedin.com/feed/?trk=homepage-basic_sign-in-submit"
+        ) {
+          const content = await page.content();
+          // Write the content to a file
+          // fs.writeFile("failepageContent.html", content, (err) => {
+          //   if (err) {
+          //     console.error("Error writing file:", err);
+          //   } else {
+          //     console.log("Page content saved to pageContent.html");
+          //   }
+          // });
+          return {
+            data: { status: true },
+            message: "LinkedIn account verification completed",
+          };
+        }
+        //   const initiateLoadAnimations = await page.$$(
+        //     ".initiate-load-animation"
+        //   );
+        //   return {
+        //     data: { status: false },
+        //     message: "LinkedIn account verification completed",
+        //   };
+        // }
+
+        // if (initiateLoadAnimations.length > 0) {
+        //   console.log(">>> Success: Credentials verified <<<");
+        //   credStatus = true;
+        // }
         // else if (
         //   (await page.$("#error-for-username")) ||
         //   (await page.$('p[error-for="password"]'))
@@ -134,18 +185,26 @@ const port = 3001;
 
 app.use(express.json());
 
-app.get("/performLinkedInAuth", async (req, res) => {
+app.post("/performLinkedInAuth", async (req, res) => {
   try {
+    const credentials = req.body;
+    console.log({ credentials });
     const aggregator = new Aggregator(); // Create an instance of Aggregator
-    const result = await aggregator.performLinkedInAuth({
-      email: "edahmitchel@gmail.com",
-      password: "mitchel76",
-    });
+    const result = await aggregator.performLinkedInAuth(
+      credentials
+      //   {
+      //   email: "edahmitchel@gmail.com",
+      //   password: "mitchel76",
+      // }
+    );
     res.json(result);
   } catch (error) {
     console.error("Error performing LinkedIn authentication:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
+});
+app.get("/", function (req, res) {
+  res.json({ status: false });
 });
 
 app.listen(port, () => {
