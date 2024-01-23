@@ -76,26 +76,26 @@ class Aggregator {
           };
         }
         // await page.waitForTimeout(30000);
-        await page.waitForNavigation({ timeout: 70000 });
+        // await page.waitForNavigation({ timeout: 70000 });
         console.log("url", page.url());
-        if (
-          page.url() ===
-          "https://www.linkedin.com/feed/?trk=homepage-basic_sign-in-submit"
-        ) {
-          const content = await page.content();
-          // Write the content to a file
-          // fs.writeFile("failepageContent.html", content, (err) => {
-          //   if (err) {
-          //     console.error("Error writing file:", err);
-          //   } else {
-          //     console.log("Page content saved to pageContent.html");
-          //   }
-          // });
-          return {
-            data: { status: true },
-            message: "LinkedIn account verification completed",
-          };
-        }
+        // if (
+        //   page.url() ===
+        //   "https://www.linkedin.com/feed/?trk=homepage-basic_sign-in-submit"
+        // ) {
+        //   const content = await page.content();
+        //   // Write the content to a file
+        //   // fs.writeFile("failepageContent.html", content, (err) => {
+        //   //   if (err) {
+        //   //     console.error("Error writing file:", err);
+        //   //   } else {
+        //   //     console.log("Page content saved to pageContent.html");
+        //   //   }
+        //   // });
+        //   return {
+        //     data: { status: true },
+        //     message: "LinkedIn account verification completed",
+        //   };
+        // }
 
         //   const initiateLoadAnimations = await page.$$(
         //     ".initiate-load-animation"
