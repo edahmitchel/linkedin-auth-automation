@@ -55,11 +55,11 @@ class Aggregator {
         if (page.url() === "https://www.linkedin.com/uas/login-submit") {
           const failedContent = await page.content();
           // fs.writeFile("failepageContent.html", failedContent, (err) => {
-          if (err) {
-            console.error("Error writing to failed file:", err);
-          } else {
-            console.log("Page content saved to pageContent.html");
-          }
+          // if (err) {
+          //   console.error("Error writing to failed file:", err);
+          // } else {
+          //   console.log("Page content saved to pageContent.html");
+          // }
           // });
           return {
             data: { status: false },
@@ -76,7 +76,7 @@ class Aggregator {
           };
         }
         // await page.waitForTimeout(30000);
-        await page.waitForNavigation({ timeout: 100000 });
+        await page.waitForNavigation({ timeout: 70000 });
         console.log("url", page.url());
         if (
           page.url() ===
@@ -96,6 +96,7 @@ class Aggregator {
             message: "LinkedIn account verification completed",
           };
         }
+
         //   const initiateLoadAnimations = await page.$$(
         //     ".initiate-load-animation"
         //   );
@@ -129,8 +130,9 @@ class Aggregator {
         // }
 
         return {
-          data: { status: credStatus },
+          data: { status: true },
           message: "LinkedIn account verification completed",
+          url: page.url(),
         };
       } catch (error) {
         console.error("An error occurred:", error);
