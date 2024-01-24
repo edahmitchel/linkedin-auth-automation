@@ -22,8 +22,8 @@ class Aggregator {
   async getBrowser() {
     try {
       const browser = await puppeteer.launch({
-        // headless: 'new', // Assuming you want to run headless
-        headless: false, // Assuming you want to run headless
+        headless: 'new', // Assuming you want to run headless
+        // headless: '', // Assuming you want to run headless
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -154,7 +154,7 @@ class Aggregator {
           message: 'LinkedIn account verification completed',
         };
       } finally {
-        page.deleteCookies();
+        await page.deleteCookie();
         await browser.close();
       }
     } catch (error) {
