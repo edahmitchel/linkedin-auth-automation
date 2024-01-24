@@ -62,8 +62,8 @@ class Aggregator {
         await page.waitForTimeout(this.randomDelay(500, 1000));
 
         await page.click('button[type="submit"]');
-        // await page.waitForTimeout(30000);
-        await page.waitForNavigation();
+        await page.waitForTimeout(3000);
+        // await page.waitForNavigation();
         console.log('ur', page.url());
         if (page.url() === 'https://www.linkedin.com/uas/login-submit') {
           const failedContent = await page.content();
@@ -154,6 +154,7 @@ class Aggregator {
           message: 'LinkedIn account verification completed',
         };
       } finally {
+        page.deleteCookies();
         await browser.close();
       }
     } catch (error) {
