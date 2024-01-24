@@ -219,7 +219,8 @@ const port = 3001;
 
 app.use(express.json());
 
-app.post('/performLinkedInAuth', async (req, res) => {
+// app.post('/performLinkedInAuth', async (req, res) => {
+app.post('/aggregator/linkedIn', async (req, res) => {
   try {
     const credentials = req.body;
     console.log({ credentials });
