@@ -23,7 +23,7 @@ class Aggregator {
     try {
       const browser = await puppeteer.launch({
         headless: 'new', // Assuming you want to run headless
-        // headless: '', // Assuming you want to run headless
+        // headless: false, // Assuming you want to run headless
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -62,8 +62,8 @@ class Aggregator {
         await page.waitForTimeout(this.randomDelay(500, 1000));
 
         await page.click('button[type="submit"]');
-        await page.waitForTimeout(3000);
-        // await page.waitForNavigation();
+        await page.waitForTimeout(10000);
+        // await page.waitForNavigation({ timeout: 0 });
         console.log('ur', page.url());
         if (page.url() === 'https://www.linkedin.com/uas/login-submit') {
           const failedContent = await page.content();
@@ -87,6 +87,24 @@ class Aggregator {
             data: { status: true },
             message: 'LinkedIn account verification completed',
           };
+        }
+
+        if (
+          page.url().includes('https://www.linkedin.com/checkpoint/challenge/')
+        ) {
+          const INDENT =
+            'The login attempt seems suspicious. To finish signing in please enter the verification code we sent to your email address';
+          if ((await page.content()).includes(INDENT)) {
+            return {
+              data: { status: true },
+              message: 'LinkedIn account verification completed',
+            };
+          } else {
+            return {
+              data: { status: false },
+              message: 'LinkedIn account not verified',
+            };
+          }
         }
         // await page.waitForTimeout(30000);
         // await page.waitForNavigation({ timeout: 70000 });
@@ -226,3 +244,11 @@ app.get('/', function (req, res) {
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
+// {
+//   "data": {
+//     "status": true
+//   },
+//   "message": "LinkedIn account verification completed",
+//   "url": "https://www.linkedin.com/checkpoint/challenge/AgHRZzO4BXoY8AAAAY07poNAAGiSG2JDyg1JVlUuMe75GVdZz2QQpexQT5dnwmM00vJQg4_ChCjxobo4nN_J4hoGwAAo0A?ut=3XU55yjFVCUH41"
+// }
