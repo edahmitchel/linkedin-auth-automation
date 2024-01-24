@@ -27,14 +27,15 @@ class Aggregator {
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
-          // '--proxy-server=https://dc.smartproxy.com:10021',
+          '--proxy-server=proxy.packetstream.io:31112',
         ], // Add these arguments
       });
       const page = await browser.newPage();
-      // page.authenticate({
-      //   username: 'user-cv2career-country-au',
-      //   password: 'wspG7q9oJtIutr2z7R',
-      // });
+      // ('proxy.packetstream.io', '31112', 'cv2career', '0IwkbXc8mEHu2UKL_country-Australia')
+      page.authenticate({
+        username: 'cv2career',
+        password: '0IwkbXc8mEHu2UKL_country-Australia',
+      });
 
       return { browser, page };
     } catch (error) {
@@ -62,8 +63,10 @@ class Aggregator {
         await page.waitForTimeout(this.randomDelay(500, 1000));
 
         await page.click('button[type="submit"]');
-        await page.waitForTimeout(10000);
-        // await page.waitForNavigation({ timeout: 0 });
+        // await page.waitForTimeout(10000);
+        try {
+          await page.waitForNavigation({ timeout: 20000 });
+        } catch {}
         console.log('ur', page.url());
         if (page.url() === 'https://www.linkedin.com/uas/login-submit') {
           const failedContent = await page.content();
@@ -253,3 +256,5 @@ app.listen(port, () => {
 //   "message": "LinkedIn account verification completed",
 //   "url": "https://www.linkedin.com/checkpoint/challenge/AgHRZzO4BXoY8AAAAY07poNAAGiSG2JDyg1JVlUuMe75GVdZz2QQpexQT5dnwmM00vJQg4_ChCjxobo4nN_J4hoGwAAo0A?ut=3XU55yjFVCUH41"
 // }
+
+// https://stage.kinkyhairstylists.com/v1
