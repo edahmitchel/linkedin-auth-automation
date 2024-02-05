@@ -22,8 +22,8 @@ class Aggregator {
   async getBrowser() {
     try {
       const browser = await puppeteer.launch({
-        headless: 'new', // Assuming you want to run headless
-        // headless: false, // Assuming you want to run headless
+        // headless: 'new', // Assuming you want to run headless
+        headless: false, // Assuming you want to run headless
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -58,12 +58,11 @@ class Aggregator {
 
         let credStatus;
         await this.typeWithDelay(page, '#session_key', email);
-        await page.waitForTimeout(this.randomDelay(500, 1000));
+        await new Promise((e)=>setTimeout(e),this.randomDelay(500,1000))
         await this.typeWithDelay(page, '#session_password', password);
-        await page.waitForTimeout(this.randomDelay(500, 1000));
-
+        await new Promise((e)=>setTimeout(e),this.randomDelay(500,1000))
         await page.click('button[type="submit"]');
-        // await page.waitForTimeout(10000);
+        await new Promise((e)=>setTimeout(e),1000)
         try {
           await page.waitForNavigation({ timeout: 20000 });
         } catch {}
@@ -189,9 +188,9 @@ class Aggregator {
 
   async linkedInAuth(page, email, password) {
     await this.typeWithDelay(page, '#session_key', email);
-    await page.waitForTimeout(this.randomDelay(500, 1000));
+    await new Promise((e)=>setTimeout(e),this.randomDelay(500,1000))
     await this.typeWithDelay(page, '#session_password', password);
-    await page.waitForTimeout(this.randomDelay(500, 1000));
+    await new Promise((e)=>setTimeout(e),this.randomDelay(500,1000))
 
     await page.click('button[type="submit"]');
 
@@ -229,11 +228,11 @@ app.post('/aggregator/linkedIn', async (req, res) => {
     console.log({ credentials });
     const aggregator = new Aggregator(); // Create an instance of Aggregator
     const result = await aggregator.performLinkedInAuth(
-      credentials
-      // {
-      //   email: 'edahmitchel@gmail.com',
-      //   password: 'mitchel76',
-      // }
+      // credentials
+      {
+        email: 'edahmitchel@gmail.com',
+        password: 'mitchel76',
+      }
     );
     res.json(result);
   } catch (error) {
