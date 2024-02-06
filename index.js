@@ -44,10 +44,77 @@ class Aggregator {
     }
   }
 
+  //Jobserve Aggregator Credential Test
+  async performJobserveAuth(credentials){
+    try{
+      const {email, password} = credentials;
+
+      const { browser, page } = await this.getBrowser();
+      try{
+        const signinUrl = 'https://www.jobserve.com/gb/en/Candidate/Login.aspx'
+        // go to sigin page
+        await page.goto(signinUrl);
+        const cookieButton=await page.waitForSelector('#PolicyOptInLink')
+        if (cookieButton==null){
+          return {
+            data: {status: false},
+            message: 'Jobserve account verification completed',
+          };
+        }
+        // click cookie notice and ensure email and password fields exist
+        await page.click('#PolicyOptInLink');
+        const emailField = await page.waitForSelector('#txbEmail');
+        const passwordField = await page.waitForSelector('#txbPassword');
+        const signinButton= await page.waitForSelector('#btnlogin');
+        if (emailField==null || passwordField==null || signinButton==null){
+          return {
+            data: {status: false},
+            message: 'Jobserve account verification completed',
+          };
+        }
+        // input email, password and click signin button
+        await this.typeWithDelay(page, '#txbEmail', email);
+        await new Promise((e)=>setTimeout(e),this.randomDelay(500,1000));
+        await this.typeWithDelay(page, '#txbPassword', password);
+        await new Promise((e)=>setTimeout(e), this.randomDelay(500,1000));
+        await page.click('#btnlogin');
+        await new Promise((e)=>setTimeout(e), this.randomDelay(5000,10000));
+        // ensure we are in the homepage
+        if (page.url() == 'https://www.jobserve.com/gb/en/can/home'){
+          return {
+            data: {staus: true},
+            message:'Jobserve account verification completed',
+          };
+        }
+        return {
+          data: {status: false},
+          message: 'Jobserve account verification completed',
+        };
+
+      } catch (error) {
+        console.error('An error occured: ',error)
+        return {
+          data:{status:false},
+          message:'Jobserve account verification completed',
+        }
+
+      } finally {
+        await page.deleteCookie();
+        await browser.close();
+      }
+
+    } catch {
+      console.error(' An error occured: ', error)
+      return {
+        data: {status: false},
+        message:'Jobserve account verification completed',
+      }
+    }
+  }
+
   // Indeed Aggregator Credential Test
   async performIndeedAuth(credentials){
     try{
-      console.log('INDEED CREDENTIALS HAVE ARRIVED', credentials);
       const {email} = credentials;
 
       const { browser, page } = await this.getBrowser();
@@ -56,7 +123,14 @@ class Aggregator {
         const signinUrl= 'https://secure.indeed.com/auth?hl=en_NG&co=NG&continue=https%3A%2F%2Fng.indeed.com%2F&tmpl=desktop&service=my&from=gnav-util-homepage&jsContinue=https%3A%2F%2Fng.indeed.com%2F&empContinue=https%3A%2F%2Faccount.indeed.com%2Fmyaccess&_ga=2.179854244.107516761.1694862912-1765997225.1680444170'
         // go to sigin page
         await page.goto(signinUrl);
-        await page.waitForSelector('input[type="email"]')
+        // ensure email input field appears on page
+        const emailField=await page.waitForSelector('input[type="email"]')
+        if (emailField==null){
+          return {
+            data: { status: false },
+            message: 'Indeed account verification completed',
+          };
+        }
         await new Promise((e)=>setTimeout(e),this.randomDelay(1000,5000));
         // type in the email field on the page
         await this.typeWithDelay(page, 'input[type="email"]', email);
@@ -102,7 +176,6 @@ class Aggregator {
   // LinkedIn Aggregator Credential Test
   async performLinkedInAuth(credentials) {
     try {
-      console.log('INDEED CREDENTIALS HAVE ARRIVED', credentials);
       const { email, password } = credentials;
 
       const { browser, page } = await this.getBrowser();
@@ -120,7 +193,6 @@ class Aggregator {
         try {
           await page.waitForNavigation({ timeout: 20000 });
         } catch {}
-        console.log('ur', page.url());
         if (page.url() === 'https://www.linkedin.com/uas/login-submit') {
           return {
             data: { status: false },
@@ -154,7 +226,6 @@ class Aggregator {
             };
           }
         }
-        console.log('url', page.url());
         return {
           data: { status: true },
           message: 'LinkedIn account verification completed',
@@ -190,7 +261,6 @@ app.use(express.json());
 app.post('/aggregator/linkedIn', async (req, res) => {
   try {
     const credentials = req.body;
-    console.log({ credentials });
     const aggregator = new Aggregator(); // Create an instance of Aggregator
     const result = await aggregator.performLinkedInAuth(credentials);
     res.json(result);
@@ -200,10 +270,21 @@ app.post('/aggregator/linkedIn', async (req, res) => {
   }
 });
 
+app.post('/aggregator/jobserve', async(req,res)=>{
+  try{
+    const credentials = req.body;
+    const aggregator= new Aggregator;
+    const result = await aggregator.performJobserveAuth(credentials);
+    res.json(result);
+  } catch (error) {
+    console.error('Error performing Jobserve authentication:', error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+})
+
 app.post('/aggregator/indeed', async(req, res) => {
   try {
     const credentials = req.body;
-    console.log({ credentials });
     const aggregator = new Aggregator(); // Create an instance of Aggregator
     const result = await aggregator.performIndeedAuth(credentials);
     res.json(result);
