@@ -71,7 +71,6 @@ class Aggregator {
         await page.click('button[data-testid="auth0-continue-with-email-button"]');
         await new Promise((e)=>setTimeout(e, 30000));
         // if not homepage
-        console.log("PRESENT URL:",page.url())
         if (page.url().includes('https://identity.monster.com/login')){
           return {
             data: {staus: false},
