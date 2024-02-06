@@ -44,6 +44,65 @@ class Aggregator {
     }
   }
 
+  //Monster Aggregator Credential Test
+  async performMonsterAuth(credentials){
+    try{
+      const {email, password} = credentials;
+      const { browser, page } = await this.getBrowser();
+      try{
+        const signinUrl= 'https://www.monster.co.uk/profile/valid-profile-continue?redirectUri=%2Fprofile%2Fdashboard%3Ffrom%3Dhomepage&amp;mode=Login';
+        // go to signin page
+        await page.goto(signinUrl);
+        await new Promise((e)=>setTimeout(e,this.randomDelay(1000,5000)));
+        const emailField = await page.waitForSelector('#email');
+        const passwordField = await page.waitForSelector('#password');
+        const signinButton= await page.waitForSelector('button[data-testid="auth0-continue-with-email-button"]');
+        if (emailField==null || passwordField==null || signinButton==null){
+          return {
+            data: {status: false},
+            message: 'Jobserve account verification completed',
+          };
+        }
+        // input email, password and click signin button
+        await this.typeWithDelay(page, '#email', email);
+        await new Promise((e)=>setTimeout(e,this.randomDelay(500,1000)));
+        await this.typeWithDelay(page, '#password', password);
+        await new Promise((e)=>setTimeout(e,this.randomDelay(500,1000)));
+        await page.click('button[data-testid="auth0-continue-with-email-button"]');
+        await new Promise((e)=>setTimeout(e, 30000));
+        // if not homepage
+        console.log("PRESENT URL:",page.url())
+        if (page.url().includes('https://identity.monster.com/login')){
+          return {
+            data: {staus: false},
+            message:'Jobserve account verification completed',
+          };
+        }
+        return {
+          data: {status: true},
+          message: 'Jobserve account verification completed',
+        };
+
+      } catch (error) {
+        console.error('An error occured', error)
+        return {
+          data: {status:false},
+          message: 'Monster account verification completed'
+        }
+      } finally{
+        await page.deleteCookie();
+        await browser.close();
+      }
+
+    } catch (error){
+      console.error('An error occured', error)
+      return {
+        data:{status:false},
+        message: 'Monster account verification completed',
+      };
+    }
+  }
+
   //Jobserve Aggregator Credential Test
   async performJobserveAuth(credentials){
     try{
@@ -74,11 +133,11 @@ class Aggregator {
         }
         // input email, password and click signin button
         await this.typeWithDelay(page, '#txbEmail', email);
-        await new Promise((e)=>setTimeout(e),this.randomDelay(500,1000));
+        await new Promise((e)=>setTimeout(e,this.randomDelay(500,1000)));
         await this.typeWithDelay(page, '#txbPassword', password);
-        await new Promise((e)=>setTimeout(e), this.randomDelay(500,1000));
+        await new Promise((e)=>setTimeout(e,this.randomDelay(500,1000)));
         await page.click('#btnlogin');
-        await new Promise((e)=>setTimeout(e), this.randomDelay(5000,10000));
+        await new Promise((e)=>setTimeout(e, this.randomDelay(5000,10000)));
         // ensure we are in the homepage
         if (page.url() == 'https://www.jobserve.com/gb/en/can/home'){
           return {
@@ -116,7 +175,6 @@ class Aggregator {
   async performIndeedAuth(credentials){
     try{
       const {email} = credentials;
-
       const { browser, page } = await this.getBrowser();
 
       try{
@@ -131,13 +189,13 @@ class Aggregator {
             message: 'Indeed account verification completed',
           };
         }
-        await new Promise((e)=>setTimeout(e),this.randomDelay(1000,5000));
+        await new Promise((e)=>setTimeout(e,this.randomDelay(1000,5000)));
         // type in the email field on the page
         await this.typeWithDelay(page, 'input[type="email"]', email);
-        await new Promise((e)=>setTimeout(e),this.randomDelay(500,1000));
+        await new Promise((e)=>setTimeout(e,this.randomDelay(500,1000)));
         // click continue button
         await page.click('button[type="submit"]');
-        await new Promise((e)=>setTimeout(e),2000);
+        await new Promise((e)=>setTimeout(e,2000));
 
         // check the presence of sign in with login code instead
         const codeMethod= await page.waitForSelector('#auth-page-google-otp-fallback')
@@ -177,7 +235,6 @@ class Aggregator {
   async performLinkedInAuth(credentials) {
     try {
       const { email, password } = credentials;
-
       const { browser, page } = await this.getBrowser();
       // const page = await browser.newPage();
 
@@ -185,11 +242,11 @@ class Aggregator {
         const baseUrl = 'https://www.linkedin.com/';
         await page.goto(baseUrl);
         await this.typeWithDelay(page, '#session_key', email);
-        await new Promise((e)=>setTimeout(e),this.randomDelay(500,1000))
+        await new Promise((e)=>setTimeout(e,this.randomDelay(500,1000)));
         await this.typeWithDelay(page, '#session_password', password);
-        await new Promise((e)=>setTimeout(e),this.randomDelay(500,1000))
+        await new Promise((e)=>setTimeout(e,this.randomDelay(500,1000)));
         await page.click('button[type="submit"]');
-        await new Promise((e)=>setTimeout(e),1000)
+        await new Promise((e)=>setTimeout(e,1000))
         try {
           await page.waitForNavigation({ timeout: 20000 });
         } catch {}
@@ -257,7 +314,6 @@ const port = 3001;
 
 app.use(express.json());
 
-// app.post('/performLinkedInAuth', async (req, res) => {
 app.post('/aggregator/linkedIn', async (req, res) => {
   try {
     const credentials = req.body;
@@ -269,6 +325,18 @@ app.post('/aggregator/linkedIn', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+app.post('/aggregator/monster', async(req,res) => {
+  try{
+    const credentials = req.body;
+    const aggregator = new Aggregator();
+    const result= await aggregator.performMonsterAuth(credentials);
+    res.json(result);
+  } catch (error) {
+    console.error('Error performing Monster authentication', error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+})
 
 app.post('/aggregator/jobserve', async(req,res)=>{
   try{
