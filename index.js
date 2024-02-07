@@ -2,8 +2,12 @@
 
 const express = require('express');
 const path = require('path');
-const puppeteer = require('puppeteer');
+//const puppeteer = require('puppeteer');
 const fs = require('fs');
+const puppeteer = require('puppeteer-extra');
+// add stealth plugin and use defaults (all evasion techniques)
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+puppeteer.use(StealthPlugin());
 
 class Aggregator {
   constructor() {
@@ -22,8 +26,8 @@ class Aggregator {
   async getBrowser() {
     try {
       const browser = await puppeteer.launch({
-        headless: 'new', // Assuming you want to run headless
-        //headless: false, // Assuming you want to run headless
+        headless: 'new', // Assuming you want to run headless mode
+        // headless: false, // Assuming you want to run head mode
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -52,7 +56,7 @@ class Aggregator {
       try{
         const signinUrl= 'https://www.monster.co.uk/profile/valid-profile-continue?redirectUri=%2Fprofile%2Fdashboard%3Ffrom%3Dhomepage&amp;mode=Login';
         // go to signin page
-        await page.goto(signinUrl);
+        await page.goto(signinUrl, {timeout:60000});
         await new Promise((e)=>setTimeout(e,this.randomDelay(1000,5000)));
         const emailField = await page.waitForSelector('#email');
         const passwordField = await page.waitForSelector('#password');
@@ -60,7 +64,7 @@ class Aggregator {
         if (emailField==null || passwordField==null || signinButton==null){
           return {
             data: {status: false},
-            message: 'Jobserve account verification completed',
+            message: 'Monster account verification completed',
           };
         }
         // input email, password and click signin button
@@ -74,12 +78,12 @@ class Aggregator {
         if (page.url().includes('https://identity.monster.com/login')){
           return {
             data: {staus: false},
-            message:'Jobserve account verification completed',
+            message:'Monster account verification completed',
           };
         }
         return {
           data: {status: true},
-          message: 'Jobserve account verification completed',
+          message: 'Monster account verification completed',
         };
 
       } catch (error) {
@@ -111,7 +115,7 @@ class Aggregator {
       try{
         const signinUrl = 'https://www.jobserve.com/gb/en/Candidate/Login.aspx'
         // go to sigin page
-        await page.goto(signinUrl);
+        await page.goto(signinUrl, {timeout:60000});
         const cookieButton=await page.waitForSelector('#PolicyOptInLink')
         if (cookieButton==null){
           return {
@@ -179,7 +183,7 @@ class Aggregator {
       try{
         const signinUrl= 'https://secure.indeed.com/auth?hl=en_NG&co=NG&continue=https%3A%2F%2Fng.indeed.com%2F&tmpl=desktop&service=my&from=gnav-util-homepage&jsContinue=https%3A%2F%2Fng.indeed.com%2F&empContinue=https%3A%2F%2Faccount.indeed.com%2Fmyaccess&_ga=2.179854244.107516761.1694862912-1765997225.1680444170'
         // go to sigin page
-        await page.goto(signinUrl);
+        await page.goto(signinUrl, {timeout:60000});
         // ensure email input field appears on page
         const emailField=await page.waitForSelector('input[type="email"]')
         if (emailField==null){
@@ -198,7 +202,6 @@ class Aggregator {
 
         // check the presence of sign in with login code instead
         const codeMethod= await page.waitForSelector('#auth-page-google-otp-fallback')
-        console.log("sign in with login code presense: ",codeMethod)
         if (codeMethod){
           return {
             data: { status: true},
@@ -239,7 +242,7 @@ class Aggregator {
 
       try {
         const baseUrl = 'https://www.linkedin.com/';
-        await page.goto(baseUrl);
+        await page.goto(baseUrl, {timeout:60000});
         await this.typeWithDelay(page, '#session_key', email);
         await new Promise((e)=>setTimeout(e,this.randomDelay(500,1000)));
         await this.typeWithDelay(page, '#session_password', password);
