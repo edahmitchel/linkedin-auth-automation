@@ -2,7 +2,6 @@
 
 const express = require('express');
 const path = require('path');
-//const puppeteer = require('puppeteer');
 const fs = require('fs');
 const puppeteer = require('puppeteer-extra');
 // add stealth plugin and use defaults (all evasion techniques)
@@ -48,7 +47,6 @@ class Aggregator {
     }
   }
 
-  //Monster Aggregator Credential Test
   async performMonsterAuth(credentials){
     try{
       const {email, password} = credentials;
@@ -106,7 +104,6 @@ class Aggregator {
     }
   }
 
-  //Jobserve Aggregator Credential Test
   async performJobserveAuth(credentials){
     try{
       const {email, password} = credentials;
@@ -174,7 +171,6 @@ class Aggregator {
     }
   }
 
-  // Indeed Aggregator Credential Test
   async performIndeedAuth(credentials){
     try{
       const {email} = credentials;
@@ -233,13 +229,10 @@ class Aggregator {
     } 
   }
 
-  // LinkedIn Aggregator Credential Test
   async performLinkedInAuth(credentials) {
     try {
       const { email, password } = credentials;
       const { browser, page } = await this.getBrowser();
-      // const page = await browser.newPage();
-
       try {
         const baseUrl = 'https://www.linkedin.com/';
         await page.goto(baseUrl, {timeout:60000});
