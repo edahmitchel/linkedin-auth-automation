@@ -139,7 +139,7 @@ class Aggregator {
         await page.click('#btnlogin');
         await new Promise((e)=>setTimeout(e, this.randomDelay(5000,10000)));
         // ensure we are in the homepage
-        if (page.url() == 'https://www.jobserve.com/gb/en/can/home'){
+        if (page.url().includes('https://www.jobserve.com/gb/en/can/home')){
           return {
             data: {staus: true},
             message:'Jobserve account verification completed',
