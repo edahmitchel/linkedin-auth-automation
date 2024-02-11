@@ -62,7 +62,8 @@ class Aggregator {
         if (emailField==null || passwordField==null || signinButton==null){
           return {
             data: {status: false},
-            message: 'Monster account verification completed',
+            message: 'An error occured. Try again.',
+            error_detail: 'email field or password field or signinbutton not on page.',
           };
         }
         // input email, password and click signin button
@@ -76,19 +77,20 @@ class Aggregator {
         if (page.url().includes('https://identity.monster.com/login')){
           return {
             data: {staus: false},
-            message:'Monster account verification completed',
+            message:'Monster account verification completed.',
           };
         }
         return {
           data: {status: true},
-          message: 'Monster account verification completed',
+          message: 'Monster account verification completed.',
         };
 
       } catch (error) {
         console.error('An error occured', error)
         return {
           data: {status:false},
-          message: 'Monster account verification completed'
+          message: 'An error occured. Try again.',
+          error_detail:error.message,
         }
       } finally{
         await page.deleteCookie();
@@ -99,7 +101,9 @@ class Aggregator {
       console.error('An error occured', error)
       return {
         data:{status:false},
-        message: 'Monster account verification completed',
+        message: 'An error occured. Try again.',
+        error_detail: error.message,
+
       };
     }
   }
@@ -117,7 +121,9 @@ class Aggregator {
         if (cookieButton==null){
           return {
             data: {status: false},
-            message: 'Jobserve account verification completed',
+            message: 'An error occured. Try again.',
+            error_detail:'cookie button not on page.',
+
           };
         }
         // click cookie notice and ensure email and password fields exist
@@ -128,7 +134,8 @@ class Aggregator {
         if (emailField==null || passwordField==null || signinButton==null){
           return {
             data: {status: false},
-            message: 'Jobserve account verification completed',
+            message: 'An error occured. Try again',
+            error_detail: 'email field or password field or signin button not on page.',
           };
         }
         // input email, password and click signin button
@@ -142,19 +149,20 @@ class Aggregator {
         if (page.url().includes('https://www.jobserve.com/gb/en/Candidate/Login.aspx')){
           return {
             data: {staus: false},
-            message:'Jobserve account verification completed',
+            message:'Jobserve account verification completed.',
           };
         }
         return {
           data: {status: true},
-          message: 'Jobserve account verification completed',
+          message: 'Jobserve account verification completed.',
         };
 
       } catch (error) {
         console.error('An error occured: ',error)
         return {
           data:{status:false},
-          message:'Jobserve account verification completed',
+          message:'An error occured. Try again.',
+          error_detail:error.message,
         }
 
       } finally {
@@ -166,7 +174,8 @@ class Aggregator {
       console.error(' An error occured: ', error)
       return {
         data: {status: false},
-        message:'Jobserve account verification completed',
+        message:'An error occured. Try again.',
+        error_detail: error.message,
       }
     }
   }
@@ -185,7 +194,8 @@ class Aggregator {
         if (emailField==null){
           return {
             data: { status: false },
-            message: 'Indeed account verification completed',
+            message: 'An error occured. Try again.',
+            error_detail: 'email field not on page.',
           };
         }
         await new Promise((e)=>setTimeout(e,this.randomDelay(1000,5000)));
@@ -201,19 +211,21 @@ class Aggregator {
         if (codeMethod){
           return {
             data: { status: true},
-            message: 'Indeed account verification completed',
+            message: 'Indeed account verification completed.',
           };
         }
         return {
           data: { status: false },
-          message: 'Indeed account verification completed',
+          message: 'Indeed account verification completed.',
         };
 
       } catch (error) {
         console.error('An error occured: ',error.message);
         return {
           data: { status: false },
-          message: 'Indeed account verification completed',
+          message: 'An error occured. Try again.',
+          error_detail: error.message,
+
         }
       } finally {
           await page.deleteCookie();
@@ -224,7 +236,8 @@ class Aggregator {
       console.error('An error occured: ',error.message);
       return {
         data: { status: false },
-        message: 'Indeed account verification completed',
+        message: 'An error occured. Try again.',
+        error_detail: error.message,
       };
     } 
   }
@@ -248,7 +261,7 @@ class Aggregator {
         if (page.url() === 'https://www.linkedin.com/uas/login-submit') {
           return {
             data: { status: false },
-            message: 'LinkedIn account verification completed',
+            message: 'LinkedIn account verification completed.',
           };
         }
         if (
@@ -257,7 +270,7 @@ class Aggregator {
         ) {
           return {
             data: { status: true },
-            message: 'LinkedIn account verification completed',
+            message: 'LinkedIn account verification completed.',
           };
         }
 
@@ -269,25 +282,25 @@ class Aggregator {
           if ((await page.content()).includes(INDENT)) {
             return {
               data: { status: true },
-              message: 'LinkedIn account verification completed',
+              message: 'LinkedIn account verification completed.',
             };
           } else {
             return {
               data: { status: false },
-              message: 'LinkedIn account not verified',
+              message: 'LinkedIn account not verified.',
             };
           }
         }
         return {
           data: { status: true },
-          message: 'LinkedIn account verification completed',
-          url: page.url(),
+          message: 'LinkedIn account verification completed.',
         };
       } catch (error) {
         console.error('An error occurred:', error);
         return {
           data: { status: false },
-          message: 'LinkedIn account verification completed',
+          message: 'An error occured. Try again.',
+          error_detail: error.message,
         };
       } finally {
         await page.deleteCookie();
@@ -297,7 +310,8 @@ class Aggregator {
       console.error('An error occurred:', error);
       return {
         data: { status: false },
-        message: 'LinkedIn account verification completed',
+        message: 'An error occured. Try again.',
+        error_detail: error.message,
       };
     }
   }
