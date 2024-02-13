@@ -54,8 +54,8 @@ class Aggregator {
   async getBrowser() {
     try {
         this.browser = await puppeteer.launch({
-        //headless: 'new', // Assuming you want to run headless mode
-        headless: false, // Assuming you want to run head mode
+        headless: 'new', // Assuming you want to run headless mode
+        // headless: false, // Assuming you want to run head mode
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
