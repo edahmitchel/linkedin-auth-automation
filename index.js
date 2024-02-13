@@ -6,12 +6,17 @@ const fs = require('fs');
 const puppeteer = require('puppeteer-extra');
 // add stealth plugin and use defaults (all evasion techniques)
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const { Mutex } = require('async-mutex');
 puppeteer.use(StealthPlugin());
 
+
+let requestsCount=0;  // variable to monitor number of requests the server is processing.
 class Aggregator {
   constructor() {
     this.randomDelay = (min, max) =>
       Math.floor(Math.random() * (max - min + 1) + min);
+    this.browserOn = false;
+    this.browser=null;
   }
 
   async typeWithDelay(page, selector, text) {
@@ -21,26 +26,42 @@ class Aggregator {
       });
     }
   }
+  
+  async browserSwitch() {
+    // function to switch on browser
+    if (this.browserOn==false){
+      await this.getBrowser();
+      this.browserOn=true;
+    }
+  }
+
+  broswerMonitor(){
+    // function to monitor if server is processing requests, so that it can know whether to close browser or not.
+    if (this.browserOn){
+      if (requestsCount <= 0){
+        this.browser.close();
+        this.browserOn=false;
+        requestsCount=0;
+      }
+    }
+  }
+   
+  startBrowserMonitor() {
+    // function to run browserMonitor at intervals
+    setInterval(this.broswerMonitor.bind(this), 60000);
+  }
 
   async getBrowser() {
     try {
-      const browser = await puppeteer.launch({
-        headless: 'new', // Assuming you want to run headless mode
-        // headless: false, // Assuming you want to run head mode
+        this.browser = await puppeteer.launch({
+        //headless: 'new', // Assuming you want to run headless mode
+        headless: false, // Assuming you want to run head mode
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--proxy-server=proxy.packetstream.io:31112',
         ], // Add these arguments
-      });
-      const page = await browser.newPage();
-      // ('proxy.packetstream.io', '31112', 'cv2career', '0IwkbXc8mEHu2UKL_country-Australia')
-      page.authenticate({
-        username: 'cv2career',
-        password: '0IwkbXc8mEHu2UKL_country-Australia',
-      });
-
-      return { browser, page };
+        });
     } catch (error) {
       console.log('Error launching browser: ' + (error.message || error));
       throw new Error(error.message);
@@ -50,8 +71,14 @@ class Aggregator {
   async performMonsterAuth(credentials){
     try{
       const {email, password} = credentials;
-      const { browser, page } = await this.getBrowser();
+      await this.browserSwitch();
       try{
+        const page = await this.browser.newPage();
+        page.authenticate({
+          username: 'cv2career',
+          password: '0IwkbXc8mEHu2UKL_country-Australia',
+        });
+
         const signinUrl= 'https://www.monster.co.uk/profile/valid-profile-continue?redirectUri=%2Fprofile%2Fdashboard%3Ffrom%3Dhomepage&amp;mode=Login';
         // go to signin page
         await page.goto(signinUrl, {timeout:60000});
@@ -92,9 +119,6 @@ class Aggregator {
           message: 'An error occured. Try again.',
           error_detail:error.message,
         }
-      } finally{
-        await page.deleteCookie();
-        await browser.close();
       }
 
     } catch (error){
@@ -111,9 +135,13 @@ class Aggregator {
   async performJobserveAuth(credentials){
     try{
       const {email, password} = credentials;
-
-      const { browser, page } = await this.getBrowser();
+      await this.browserSwitch();
       try{
+        const page = await this.browser.newPage();
+        page.authenticate({
+          username: 'cv2career',
+          password: '0IwkbXc8mEHu2UKL_country-Australia',
+        });
         const signinUrl = 'https://www.jobserve.com/gb/en/Candidate/Login.aspx'
         // go to sigin page
         await page.goto(signinUrl, {timeout:60000});
@@ -165,11 +193,7 @@ class Aggregator {
           error_detail:error.message,
         }
 
-      } finally {
-        await page.deleteCookie();
-        await browser.close();
       }
-
     } catch {
       console.error(' An error occured: ', error)
       return {
@@ -183,9 +207,13 @@ class Aggregator {
   async performIndeedAuth(credentials){
     try{
       const {email} = credentials;
-      const { browser, page } = await this.getBrowser();
-
+      await this.browserSwitch();
       try{
+        const page = await this.browser.newPage();
+        page.authenticate({
+          username: 'cv2career',
+          password: '0IwkbXc8mEHu2UKL_country-Australia',
+        });
         const signinUrl= 'https://secure.indeed.com/auth?hl=en_NG&co=NG&continue=https%3A%2F%2Fng.indeed.com%2F&tmpl=desktop&service=my&from=gnav-util-homepage&jsContinue=https%3A%2F%2Fng.indeed.com%2F&empContinue=https%3A%2F%2Faccount.indeed.com%2Fmyaccess&_ga=2.179854244.107516761.1694862912-1765997225.1680444170'
         // go to sigin page
         await page.goto(signinUrl, {timeout:60000});
@@ -227,11 +255,7 @@ class Aggregator {
           error_detail: error.message,
 
         }
-      } finally {
-          await page.deleteCookie();
-          await browser.close();
       }
-        
     } catch(error){
       console.error('An error occured: ',error.message);
       return {
@@ -245,8 +269,13 @@ class Aggregator {
   async performLinkedInAuth(credentials) {
     try {
       const { email, password } = credentials;
-      const { browser, page } = await this.getBrowser();
+      await this.browserSwitch();
       try {
+        const page = await this.browser.newPage();
+        page.authenticate({
+          username: 'cv2career',
+          password: '0IwkbXc8mEHu2UKL_country-Australia',
+        });
         const baseUrl = 'https://www.linkedin.com/';
         await page.goto(baseUrl, {timeout:60000});
         await this.typeWithDelay(page, '#session_key', email);
@@ -302,9 +331,6 @@ class Aggregator {
           message: 'An error occured. Try again.',
           error_detail: error.message,
         };
-      } finally {
-        await page.deleteCookie();
-        await browser.close();
       }
     } catch (error) {
       console.error('An error occurred:', error);
@@ -322,51 +348,84 @@ const app = express();
 const port = 3001;
 
 app.use(express.json());
-
+const aggregator = new Aggregator(); // Create an instance of Aggregator.
+const mutex = new Mutex(); // define mutex to prevent racing condition of requestsCount variable.
 app.post('/aggregator/linkedIn', async (req, res) => {
   try {
+    const release = await mutex.acquire();
+    requestsCount++;
+    release();
     const credentials = req.body;
-    const aggregator = new Aggregator(); // Create an instance of Aggregator
     const result = await aggregator.performLinkedInAuth(credentials);
+    const release2 = await mutex.acquire();
+    requestsCount--;
+    release2();
     res.json(result);
   } catch (error) {
     console.error('Error performing LinkedIn authentication:', error);
+    const release3 = await mutex.require()
+    requestsCount--
+    release3()
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
 app.post('/aggregator/monster', async(req,res) => {
   try{
+    const release = await mutex.acquire();
+    requestsCount++;
+    release();
     const credentials = req.body;
-    const aggregator = new Aggregator();
     const result= await aggregator.performMonsterAuth(credentials);
+    const release2 = await mutex.acquire();
+    requestsCount--;
+    release2();
     res.json(result);
   } catch (error) {
     console.error('Error performing Monster authentication', error);
+    const release3 = await mutex.acquire();
+    requestsCount--;
+    release3();
     res.status(500).json({error: 'Internal Server Error'});
   }
 })
 
 app.post('/aggregator/jobserve', async(req,res)=>{
   try{
+    const release = await mutex.acquire();
+    requestsCount++;
+    release();
     const credentials = req.body;
-    const aggregator= new Aggregator;
     const result = await aggregator.performJobserveAuth(credentials);
+    const release2 = await mutex.acquire();
+    requestsCount--;
+    release2();
     res.json(result);
   } catch (error) {
     console.error('Error performing Jobserve authentication:', error);
+    const release3 = await mutex.acquire();
+    requestsCount--;
+    release3();
     res.status(500).json({error: 'Internal Server Error'});
   }
 })
 
 app.post('/aggregator/indeed', async(req, res) => {
   try {
+    const release = await mutex.acquire();
+    requestsCount++;
+    release();
     const credentials = req.body;
-    const aggregator = new Aggregator(); // Create an instance of Aggregator
     const result = await aggregator.performIndeedAuth(credentials);
+    const release2 = await mutex.acquire();
+    requestsCount--;
+    release2();
     res.json(result);
   } catch (error) {
     console.error('Error performing Indeed authentication:', error);
+    const release3 = await mutex.acquire();
+    requestsCount--;
+    release3();
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -374,6 +433,7 @@ app.post('/aggregator/indeed', async(req, res) => {
 app.get('/', function (req, res) {
   res.json({ status: false });
 });
+aggregator.startBrowserMonitor()
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
