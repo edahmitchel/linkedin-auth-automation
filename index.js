@@ -47,8 +47,9 @@ class Aggregator {
   }
    
   startBrowserMonitor() {
+    const timeInterval= 5 * 60 * 1000;
     // function to run browserMonitor at intervals
-    setInterval(this.broswerMonitor.bind(this), 60000);
+    setInterval(this.broswerMonitor.bind(this), timeInterval);
   }
 
   async getBrowser() {
@@ -72,8 +73,8 @@ class Aggregator {
     try{
       const {email, password} = credentials;
       await this.browserSwitch();
+      const page = await this.browser.newPage();
       try{
-        const page = await this.browser.newPage();
         page.authenticate({
           username: 'cv2career',
           password: '0IwkbXc8mEHu2UKL_country-Australia',
@@ -119,6 +120,8 @@ class Aggregator {
           message: 'An error occured. Try again.',
           error_detail:error.message,
         }
+      }finally{
+        page.close();
       }
 
     } catch (error){
@@ -136,8 +139,8 @@ class Aggregator {
     try{
       const {email, password} = credentials;
       await this.browserSwitch();
+      const page = await this.browser.newPage();
       try{
-        const page = await this.browser.newPage();
         page.authenticate({
           username: 'cv2career',
           password: '0IwkbXc8mEHu2UKL_country-Australia',
@@ -193,6 +196,8 @@ class Aggregator {
           error_detail:error.message,
         }
 
+      }finally{
+        page.close();
       }
     } catch {
       console.error(' An error occured: ', error)
@@ -208,8 +213,8 @@ class Aggregator {
     try{
       const {email} = credentials;
       await this.browserSwitch();
+      const page = await this.browser.newPage();
       try{
-        const page = await this.browser.newPage();
         page.authenticate({
           username: 'cv2career',
           password: '0IwkbXc8mEHu2UKL_country-Australia',
@@ -255,6 +260,8 @@ class Aggregator {
           error_detail: error.message,
 
         }
+      } finally{
+        page.close();
       }
     } catch(error){
       console.error('An error occured: ',error.message);
@@ -270,8 +277,8 @@ class Aggregator {
     try {
       const { email, password } = credentials;
       await this.browserSwitch();
+      const page = await this.browser.newPage();
       try {
-        const page = await this.browser.newPage();
         page.authenticate({
           username: 'cv2career',
           password: '0IwkbXc8mEHu2UKL_country-Australia',
@@ -331,6 +338,8 @@ class Aggregator {
           message: 'An error occured. Try again.',
           error_detail: error.message,
         };
+      } finally{
+        page.close();
       }
     } catch (error) {
       console.error('An error occurred:', error);
@@ -363,9 +372,9 @@ app.post('/aggregator/linkedIn', async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Error performing LinkedIn authentication:', error);
-    const release3 = await mutex.require()
-    requestsCount--
-    release3()
+    const release3 = await mutex.require();
+    requestsCount--;
+    release3();
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -433,8 +442,9 @@ app.post('/aggregator/indeed', async(req, res) => {
 app.get('/', function (req, res) {
   res.json({ status: false });
 });
-aggregator.startBrowserMonitor()
 
+
+aggregator.startBrowserMonitor();
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
